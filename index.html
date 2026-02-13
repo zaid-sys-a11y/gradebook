@@ -90,6 +90,7 @@
   td input.num-input { width: 70px; text-align: center; }
   td input.grade-input { width: 80px; text-align: center; }
   td input.grade-input.nm { color: var(--text-muted); font-style: italic; }
+  td input.grade-input.ng { color: var(--red); font-weight: 600; }
   .type-toggle { display: flex; gap: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
   .type-toggle button { flex: 1; padding: 7px 12px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: all 0.2s; background: var(--surface2); color: var(--text-muted); white-space: nowrap; }
   .type-toggle button.active-minor { background: rgba(59, 130, 246, 0.2); color: var(--minor-tag); }
@@ -130,11 +131,43 @@
   .kick-btn.unblock:hover { background: rgba(74,222,128,0.1); }
   .no-users { color: var(--text-muted); font-size: 13px; text-align: center; padding: 16px; }
 
+  /* Toggle */
+  .toggle-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .toggle-label { font-size: 13px; color: var(--text-muted); }
+  .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 24px; transition: 0.3s; }
+  .toggle-slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 2px; bottom: 2px; background: var(--text-muted); border-radius: 50%; transition: 0.3s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: white; }
+
   @media (max-width: 600px) {
-    .settings { flex-direction: column; }
-    td input.name-input { min-width: 100px; }
-    thead th, tbody td { padding: 8px 10px; font-size: 12px; }
-    .top-bar { padding: 8px 12px; }
+    body { padding: 16px 10px; }
+    .settings { flex-direction: column; gap: 10px; }
+    .setting-card { min-width: unset; }
+    .container { padding-top: 56px; }
+    header h1 { font-size: 20px; }
+    td input.name-input { min-width: 80px; font-size: 12px; }
+    td input.num-input { width: 50px; font-size: 12px; }
+    td input.grade-input { width: 55px; font-size: 12px; }
+    thead th, tbody td { padding: 6px 6px; font-size: 11px; }
+    .type-toggle button { padding: 5px 8px; font-size: 10px; }
+    .top-bar { padding: 8px 10px; gap: 6px; }
+    .user-name { font-size: 11px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-btn { padding: 5px 10px; font-size: 11px; }
+    .result-value { font-size: 22px; }
+    .result-card.final .result-value { font-size: 28px; }
+    .results { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .paste-area { min-height: 80px; font-size: 11px; padding: 10px; }
+    .paste-actions { flex-wrap: wrap; }
+    .admin-panel { padding: 16px; }
+    .user-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .auth-box { width: 90vw; padding: 24px; }
+    .blocked-box { width: 90vw; padding: 24px; }
+    .toggle-section { padding: 12px 14px; }
+    .toggle-label { font-size: 12px; }
+    .delete-btn { font-size: 14px; padding: 2px 4px; }
+    .table-wrapper { overflow-x: auto; }
   }
 </style>
 </head>
@@ -203,6 +236,14 @@
       <label>Final Boost (%)</label>
       <input type="number" id="boost" value="10" min="0" max="100" oninput="calculate()">
     </div>
+  </div>
+
+  <div class="toggle-section">
+    <span class="toggle-label">Grades not matching up? Drop lowest minor</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="dropLowest" checked onchange="calculate()">
+      <span class="toggle-slider"></span>
+    </label>
   </div>
 
   <div class="paste-section">
@@ -284,7 +325,6 @@ async function handleAuth() {
     let userCred;
     if (isSignUp) {
       userCred = await auth.createUserWithEmailAndPassword(email, password);
-      // Save user to Firestore
       await db.collection('users').doc(userCred.user.uid).set({
         name: name,
         email: email,
@@ -317,7 +357,6 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     isAdmin = user.email === ADMIN_EMAIL;
 
-    // Check if blocked
     const userDoc = await db.collection('users').doc(user.uid).get();
     if (userDoc.exists && userDoc.data().blocked) {
       document.getElementById('authScreen').classList.add('hidden');
@@ -327,12 +366,10 @@ auth.onAuthStateChanged(async (user) => {
       return;
     }
 
-    // Get display name
     let displayName = '';
     if (userDoc.exists && userDoc.data().name) {
       displayName = userDoc.data().name;
     } else {
-      // Extract from email
       const local = user.email.split('@')[0];
       displayName = local.replace(/[._-]/g, ' ').replace(/\d+/g, '').trim()
         .split(/\s+/).filter(p => p).map(p => p[0].toUpperCase() + p.slice(1)).join(' ') || local;
@@ -340,7 +377,6 @@ auth.onAuthStateChanged(async (user) => {
 
     const initials = displayName.split(/\s+/).map(p => p[0]).join('').toUpperCase().slice(0, 2);
 
-    // Show app
     document.getElementById('authScreen').classList.add('hidden');
     document.getElementById('blockedScreen').classList.add('hidden');
     document.getElementById('mainContainer').classList.remove('hidden');
@@ -429,9 +465,13 @@ let assignments = [{ name: '', type: 'minor', weight: 1.0, grade: '' }];
 function isGraded(a) {
   const g = String(a.grade).trim().toUpperCase();
   if (g === '' || g === 'NM') return false;
+  if (g === 'NG') return true;
   return !isNaN(parseFloat(g));
 }
-function gradeValue(a) { return parseFloat(a.grade); }
+function gradeValue(a) {
+  if (String(a.grade).trim().toUpperCase() === 'NG') return 0;
+  return parseFloat(a.grade);
+}
 function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function render() {
@@ -439,6 +479,7 @@ function render() {
   tbody.innerHTML = '';
   assignments.forEach((a, i) => {
     const isNM = String(a.grade).trim().toUpperCase() === 'NM';
+    const isNG = String(a.grade).trim().toUpperCase() === 'NG';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input class="name-input" type="text" placeholder="Assignment name" value="${escapeHtml(a.name)}" oninput="updateField(${i}, 'name', this.value)"></td>
@@ -447,7 +488,7 @@ function render() {
         <button class="${a.type === 'major' ? 'active-major' : ''}" onclick="setType(${i}, 'major')">Major</button>
       </div></td>
       <td><input class="num-input" type="number" step="0.1" min="0" value="${a.weight}" oninput="updateField(${i}, 'weight', parseFloat(this.value) || 0)"></td>
-      <td><input class="grade-input ${isNM ? 'nm' : ''}" type="text" placeholder="—" value="${escapeHtml(String(a.grade))}" oninput="updateField(${i}, 'grade', this.value)"></td>
+      <td><input class="grade-input ${isNM ? 'nm' : ''}${isNG ? 'ng' : ''}" type="text" placeholder="—" value="${escapeHtml(String(a.grade))}" oninput="updateField(${i}, 'grade', this.value)" onchange="updateField(${i}, 'grade', this.value)" onblur="updateField(${i}, 'grade', this.value)"></td>
       <td><button class="delete-btn" onclick="removeRow(${i})">✕</button></td>
     `;
     tbody.appendChild(tr);
@@ -460,7 +501,11 @@ function updateField(i, field, value) {
   calculate();
   if (field === 'grade') {
     const input = document.querySelectorAll('.grade-input')[i];
-    if (input) input.classList.toggle('nm', String(value).trim().toUpperCase() === 'NM');
+    if (input) {
+      const upper = String(value).trim().toUpperCase();
+      input.classList.toggle('nm', upper === 'NM');
+      input.classList.toggle('ng', upper === 'NG');
+    }
   }
 }
 
@@ -484,9 +529,10 @@ function calculate() {
 
   const minors = assignments.filter(a => a.type === 'minor' && isGraded(a));
   const majors = assignments.filter(a => a.type === 'major' && isGraded(a));
+  const dropLowest = document.getElementById('dropLowest').checked;
 
   let minorAvg = null, droppedNote = '';
-  if (minors.length > 1) {
+  if (minors.length > 1 && dropLowest) {
     let lowestIdx = 0, lowestGrade = gradeValue(minors[0]);
     for (let i = 1; i < minors.length; i++) {
       if (gradeValue(minors[i]) < lowestGrade) { lowestGrade = gradeValue(minors[i]); lowestIdx = i; }
@@ -494,8 +540,10 @@ function calculate() {
     const kept = minors.filter((_, i) => i !== lowestIdx);
     const tw = kept.reduce((s, a) => s + a.weight, 0);
     minorAvg = kept.reduce((s, a) => s + a.weight * gradeValue(a), 0) / tw;
-    droppedNote = `Dropped: ${minors[lowestIdx].name || 'Unnamed'} (${lowestGrade})`;
-  } else if (minors.length === 1) { minorAvg = gradeValue(minors[0]); }
+  } else if (minors.length > 0) {
+    const tw = minors.reduce((s, a) => s + a.weight, 0);
+    minorAvg = minors.reduce((s, a) => s + a.weight * gradeValue(a), 0) / tw;
+  }
 
   let majorAvg = null;
   if (majors.length > 0) {
@@ -518,13 +566,15 @@ function calculate() {
 
   const gc = (v) => v >= 90 ? 'color-green' : v >= 75 ? 'color-orange' : 'color-red';
   const nmCount = assignments.filter(a => String(a.grade).trim().toUpperCase() === 'NM').length;
+  const ngCount = assignments.filter(a => String(a.grade).trim().toUpperCase() === 'NG').length;
   const nmNote = nmCount > 0 ? ` · ${nmCount} NM excluded` : '';
+  const ngNote = ngCount > 0 ? ` · ${ngCount} NG (as 0)` : '';
 
   resultsDiv.innerHTML = `
     <div class="result-card"><div class="result-label">Minor Avg</div><div class="result-value ${minorAvg !== null ? gc(minorAvg) : ''}">${minorAvg !== null ? minorAvg.toFixed(2) + '%' : '—'}</div><div class="result-detail">${minors.length} graded</div></div>
     <div class="result-card"><div class="result-label">Major Avg</div><div class="result-value ${majorAvg !== null ? gc(majorAvg) : ''}">${majorAvg !== null ? majorAvg.toFixed(2) + '%' : '—'}</div><div class="result-detail">${majors.length} graded</div></div>
     <div class="result-card"><div class="result-label">Before Boost</div><div class="result-value ${gc(overall)}">${overall.toFixed(2)}%</div><div class="result-detail">${(minorPct*100).toFixed(0)}% minor · ${(majorPct*100).toFixed(0)}% major</div></div>
-    <div class="result-card final"><div class="result-label">Final Grade (×${boostMult.toFixed(2)})</div><div class="result-value">${finalGrade.toFixed(2)}%</div><div class="result-detail">${droppedNote}${nmNote}</div></div>
+    <div class="result-card final"><div class="result-label">Final Grade (×${boostMult.toFixed(2)})</div><div class="result-value">${finalGrade.toFixed(2)}%</div></div>
   `;
 }
 
@@ -547,6 +597,8 @@ function parsePastedText() {
     let grade = 'NM';
     if (/\bNM\b/i.test(line)) {
       grade = 'NM';
+    } else if (/\bNG\b/i.test(line)) {
+      grade = 'NG';
     } else {
       const allGradeMatches = [...line.matchAll(/(\d+\.?\d*)\s*\/\s*(\d+)/g)];
       const gradeMatch = allGradeMatches.filter(m => parseFloat(m[2]) === 100).pop();
@@ -554,7 +606,7 @@ function parsePastedText() {
     }
 
     let weight = 1.0;
-    let lineWithoutGrade = line.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g, '').replace(/\bNM\b/gi, '');
+    let lineWithoutGrade = line.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g, '').replace(/\bNM\b/gi, '').replace(/\bNG\b/gi, '');
     const weightMatches = lineWithoutGrade.match(/\b(\d+\.\d+)\b/g);
     if (weightMatches) { for (const wm of weightMatches) { const val = parseFloat(wm); if (val >= 0.1 && val <= 5.0) { weight = val; break; } } }
     const tabParts = line.split(/\t/);
@@ -565,6 +617,7 @@ function parsePastedText() {
     name = name.replace(/(Minor|Major)\s*(Assignment)?\s*\d*/gi, '');
     name = name.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g, '');
     name = name.replace(/\bNM\b/gi, '');
+    name = name.replace(/\bNG\b/gi, '');
     name = name.replace(new RegExp('\\b' + weight.toFixed(1).replace('.', '\\.') + '\\b'), '');
     name = name.replace(/\b(Date|Type|Weight|Grade)\b/gi, '');
     name = name.replace(/\t/g, ' ').replace(/\s+/g, ' ').trim();
@@ -578,7 +631,11 @@ function parsePastedText() {
   assignments = results;
   render();
   const nmCount = results.filter(a => a.grade === 'NM').length;
-  status.textContent = `✓ Imported ${results.length} assignments` + (nmCount > 0 ? ` (${nmCount} NM)` : '');
+  const ngCount = results.filter(a => a.grade === 'NG').length;
+  let extra = '';
+  if (nmCount > 0) extra += ` (${nmCount} NM)`;
+  if (ngCount > 0) extra += ` (${ngCount} NG)`;
+  status.textContent = `✓ Imported ${results.length} assignments` + extra;
   status.className = 'paste-status success';
 }
 
