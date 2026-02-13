@@ -136,6 +136,20 @@
   .sem-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
   .sem-computed { background: transparent !important; border-color: transparent !important; font-weight: 600; }
   .sem-letter { font-size: 12px; text-align: center; margin-top: 2px; font-weight: 700; letter-spacing: 0.5px; }
+  .gpa-table { width: 100%; border-collapse: collapse; }
+  .gpa-table th { background: var(--surface2); padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 600; text-align: left; border-bottom: 1px solid var(--border); }
+  .gpa-table td { padding: 8px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .gpa-table tr:last-child td { border-bottom: none; }
+  .gpa-table tr:hover { background: rgba(108, 140, 255, 0.04); }
+  .gpa-table .course-name { font-family: 'DM Sans', sans-serif; font-weight: 500; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gpa-table .num { font-family: 'JetBrains Mono', monospace; text-align: center; }
+  .gpa-table .section-header td { background: var(--surface2); font-weight: 700; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; }
+  .gpa-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .gpa-tag-a { background: rgba(74,222,128,0.15); color: var(--green); }
+  .gpa-tag-b { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .gpa-tag-c { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .gpa-tag-d { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .gpa-tag-f { background: rgba(248,113,113,0.15); color: var(--red); }
   @media (max-width: 600px) {
     body { padding: 16px 10px; }
     .settings { flex-direction: column; gap: 10px; }
@@ -164,7 +178,9 @@
     .table-wrapper { overflow-x: auto; }
     .sem-inputs { flex-direction: column; gap: 8px; }
     .sem-field { min-width: unset; }
-    .tab-btn { font-size: 12px; padding: 10px 8px; }
+    .tab-btn { font-size: 11px; padding: 10px 6px; }
+    .gpa-table th, .gpa-table td { padding: 6px 8px; font-size: 11px; }
+    .gpa-table .course-name { max-width: 120px; }
   }
 </style>
 </head>
@@ -182,18 +198,10 @@
   </div>
 </div>
 <div class="blocked-screen hidden" id="blockedScreen">
-  <div class="blocked-box">
-    <h2>Access Revoked</h2>
-    <p>Your access has been removed by the admin.</p>
-    <button class="auth-btn" onclick="signOutUser()">Sign Out</button>
-  </div>
+  <div class="blocked-box"><h2>Access Revoked</h2><p>Your access has been removed by the admin.</p><button class="auth-btn" onclick="signOutUser()">Sign Out</button></div>
 </div>
 <div class="top-bar" id="topBar">
-  <div class="user-badge">
-    <div class="user-avatar" id="userAvatar"></div>
-    <span class="user-name" id="userName"></span>
-    <span class="admin-tag" id="adminTag" style="display:none;">Admin</span>
-  </div>
+  <div class="user-badge"><div class="user-avatar" id="userAvatar"></div><span class="user-name" id="userName"></span><span class="admin-tag" id="adminTag" style="display:none;">Admin</span></div>
   <button class="top-btn" id="adminToggleBtn" style="display:none;" onclick="toggleAdminPanel()">Manage Users</button>
   <button class="top-btn danger" onclick="signOutUser()">Sign Out</button>
 </div>
@@ -204,8 +212,9 @@
     <div class="user-list" id="userList"><div class="no-users">Loading users...</div></div>
   </div>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('gradebook')">Grade Calculator</button>
-    <button class="tab-btn" onclick="switchTab('semester')">Semester Exam</button>
+    <button class="tab-btn active" onclick="switchTab('gradebook')">Grades</button>
+    <button class="tab-btn" onclick="switchTab('semester')">Semester</button>
+    <button class="tab-btn" onclick="switchTab('gpa')">GPA / QPA</button>
   </div>
   <div class="tab-content active" id="tab-gradebook">
     <div class="settings">
@@ -227,10 +236,7 @@
       </div>
     </div>
     <div class="table-wrapper">
-      <table>
-        <thead><tr><th>Assignment</th><th>Type</th><th>Weight</th><th>Grade</th><th></th></tr></thead>
-        <tbody id="assignmentBody"></tbody>
-      </table>
+      <table><thead><tr><th>Assignment</th><th>Type</th><th>Weight</th><th>Grade</th><th></th></tr></thead><tbody id="assignmentBody"></tbody></table>
       <div class="add-row"><button class="add-btn" onclick="addRow()">+ Add Assignment</button></div>
     </div>
     <div class="results" id="results"></div>
@@ -239,6 +245,34 @@
     <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;text-align:center;">Final = (Term Avg × 80%) + (Exam × 20%)</p>
     <div id="semesterBlocks"></div>
     <div class="add-row"><button class="add-btn" onclick="addSemBlock()">+ Add Block</button></div>
+  </div>
+  <div class="tab-content" id="tab-gpa">
+    <div class="paste-section">
+      <div class="paste-header"><span class="paste-title">Paste History Courses (from Courses tab)</span></div>
+      <textarea class="paste-area" id="gpaHistoryArea" placeholder="Paste your History Courses table here..."></textarea>
+      <div class="paste-actions">
+        <button class="parse-btn" onclick="parseHistoryCourses()">Import History</button>
+        <span class="paste-status" id="gpaHistoryStatus"></span>
+      </div>
+    </div>
+    <div class="paste-section">
+      <div class="paste-header"><span class="paste-title">Paste Current Year Grades (from Term Grades)</span></div>
+      <textarea class="paste-area" id="gpaCurrentArea" placeholder="Paste your current year Term Grades table here..."></textarea>
+      <div class="paste-actions">
+        <button class="parse-btn" onclick="parseCurrentCourses()">Import Current</button>
+        <span class="paste-status" id="gpaCurrentStatus"></span>
+      </div>
+    </div>
+    <div class="paste-actions" style="margin-bottom:20px;justify-content:center;">
+      <button class="add-btn" onclick="resetGPA()">Reset All</button>
+    </div>
+    <div class="results" id="gpaResults"></div>
+    <div class="table-wrapper" id="gpaTableWrapper" style="display:none;">
+      <table class="gpa-table">
+        <thead><tr><th>Course</th><th>Grade</th><th>QPs</th><th>Credits</th><th>Letter</th></tr></thead>
+        <tbody id="gpaBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -255,8 +289,8 @@ auth.onAuthStateChanged(async(user)=>{if(user){currentUser=user;isAdmin=user.ema
 function toggleAdminPanel(){const p=document.getElementById('adminPanel');p.classList.toggle('hidden');if(!p.classList.contains('hidden'))loadUsers();}
 async function loadUsers(){const el=document.getElementById('userList');el.innerHTML='<div class="no-users">Loading...</div>';try{const snap=await db.collection('users').orderBy('joinedAt','desc').get();if(snap.empty){el.innerHTML='<div class="no-users">No users yet</div>';return;}el.innerHTML='';snap.forEach(doc=>{const d=doc.data(),self=currentUser&&doc.id===currentUser.uid,j=d.joinedAt?new Date(d.joinedAt.seconds*1000).toLocaleDateString():'Unknown',r=document.createElement('div');r.className='user-row'+(d.blocked?' blocked':'');r.innerHTML=`<div class="user-info"><span class="name">${esc(d.name||'Unknown')}${self?' (you)':''}${d.email===ADMIN_EMAIL?' <span class="admin-tag">Admin</span>':''}</span><span class="email">${esc(d.email||'')}</span><span class="joined">Joined ${j}</span></div>${!self&&d.email!==ADMIN_EMAIL?`<button class="kick-btn ${d.blocked?'unblock':''}" onclick="toggleBlock('${doc.id}',${!d.blocked})">${d.blocked?'Unblock':'Block'}</button>`:''}`;el.appendChild(r);});}catch(e){console.error(e);el.innerHTML='<div class="no-users">Error loading users</div>';}}
 async function toggleBlock(uid,block){try{await db.collection('users').doc(uid).update({blocked:block});loadUsers();}catch(e){console.error(e);}}
-
-function switchTab(tab){document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===(tab==='gradebook'?0:1)));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');}
+const tabNames=['gradebook','semester','gpa'];
+function switchTab(tab){document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===tabNames.indexOf(tab)));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');}
 
 // ── Gradebook ──
 let assignments=[{name:'',type:'minor',weight:1.0,grade:''}];
@@ -270,63 +304,179 @@ function addRow(){assignments.push({name:'',type:'minor',weight:1.0,grade:''});r
 function removeRow(i){if(assignments.length<=1)return;assignments.splice(i,1);render();}
 function resetAll(){assignments=[{name:'',type:'minor',weight:1.0,grade:''}];document.getElementById('pasteArea').value='';document.getElementById('pasteStatus').textContent='';document.getElementById('pasteStatus').className='paste-status';render();}
 function calculate(){const minorPct=parseFloat(document.getElementById('minorWeight').value)/100||0,majorPct=parseFloat(document.getElementById('majorWeight').value)/100||0,boostMult=1+(parseFloat(document.getElementById('boost').value)/100||0),minors=assignments.filter(a=>a.type==='minor'&&isGraded(a)),majors=assignments.filter(a=>a.type==='major'&&isGraded(a)),drop=document.getElementById('dropLowest').checked;let minorAvg=null;if(minors.length>1&&drop){let li=0;for(let i=1;i<minors.length;i++)if(gv(minors[i])<gv(minors[li]))li=i;const kept=minors.filter((_,i)=>i!==li),tw=kept.reduce((s,a)=>s+a.weight,0);minorAvg=kept.reduce((s,a)=>s+a.weight*gv(a),0)/tw;}else if(minors.length>0){const tw=minors.reduce((s,a)=>s+a.weight,0);minorAvg=minors.reduce((s,a)=>s+a.weight*gv(a),0)/tw;}let majorAvg=null;if(majors.length>0){const tw=majors.reduce((s,a)=>s+a.weight,0);majorAvg=majors.reduce((s,a)=>s+a.weight*gv(a),0)/tw;}let overall=null;if(minorAvg!==null&&majorAvg!==null)overall=minorPct*minorAvg+majorPct*majorAvg;else if(minorAvg!==null)overall=minorAvg;else if(majorAvg!==null)overall=majorAvg;const finalGrade=overall!==null?overall*boostMult:null,r=document.getElementById('results');if(overall===null){r.innerHTML='<div class="result-card final"><div class="result-label">Final Grade</div><div class="result-value">—</div><div class="result-detail">Enter grades to calculate</div></div>';return;}const gc=v=>v>=90?'color-green':v>=75?'color-orange':'color-red';r.innerHTML=`<div class="result-card"><div class="result-label">Minor Avg</div><div class="result-value ${minorAvg!==null?gc(minorAvg):''}">${minorAvg!==null?minorAvg.toFixed(2)+'%':'—'}</div><div class="result-detail">${minors.length} graded</div></div><div class="result-card"><div class="result-label">Major Avg</div><div class="result-value ${majorAvg!==null?gc(majorAvg):''}">${majorAvg!==null?majorAvg.toFixed(2)+'%':'—'}</div><div class="result-detail">${majors.length} graded</div></div><div class="result-card"><div class="result-label">Before Boost</div><div class="result-value ${gc(overall)}">${overall.toFixed(2)}%</div><div class="result-detail">${(minorPct*100).toFixed(0)}% minor · ${(majorPct*100).toFixed(0)}% major</div></div><div class="result-card final"><div class="result-label">Final Grade (×${boostMult.toFixed(2)})</div><div class="result-value">${finalGrade.toFixed(2)}%</div></div>`;}
-
 function parsePastedText(){const raw=document.getElementById('pasteArea').value.trim(),st=document.getElementById('pasteStatus');if(!raw){st.textContent='Paste your gradebook table first';st.className='paste-status error';return;}const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length>0),res=[];for(const line of lines){if(/^\s*date\s/i.test(line)&&/assignment/i.test(line))continue;const hasMinor=/minor/i.test(line),hasMajor=/major/i.test(line);if(!hasMinor&&!hasMajor)continue;const type=hasMajor?'major':'minor';let grade='NM';if(/\bNM\b/i.test(line))grade='NM';else if(/\bNG\b/i.test(line))grade='NG';else{const m=[...line.matchAll(/(\d+\.?\d*)\s*\/\s*(\d+)/g)].filter(m=>parseFloat(m[2])===100).pop();if(m)grade=String(parseFloat(m[1]));}let weight=1.0,lw=line.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g,'').replace(/\bNM\b/gi,'').replace(/\bNG\b/gi,'');const wm=lw.match(/\b(\d+\.\d+)\b/g);if(wm)for(const w of wm){const v=parseFloat(w);if(v>=0.1&&v<=5.0){weight=v;break;}}const tp=line.split(/\t/);if(tp.length>=4)for(let ti=2;ti<tp.length;ti++){const c=tp[ti].trim(),v=parseFloat(c);if(!isNaN(v)&&v>=0.1&&v<=5.0&&c.match(/^\d+\.?\d*$/)){weight=v;break;}}let name=line;name=name.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g,'').replace(/(Minor|Major)\s*(Assignment)?\s*\d*/gi,'').replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g,'').replace(/\bNM\b/gi,'').replace(/\bNG\b/gi,'').replace(new RegExp('\\b'+weight.toFixed(1).replace('.','\\.')+'\\b'),'').replace(/\b(Date|Type|Weight|Grade)\b/gi,'').replace(/\t/g,' ').replace(/\s+/g,' ').trim();if(name.length<1)continue;res.push({name,type,weight,grade});}if(!res.length){st.textContent='No assignments found.';st.className='paste-status error';return;}assignments=res;render();const nm=res.filter(a=>a.grade==='NM').length,ng=res.filter(a=>a.grade==='NG').length;let x='';if(nm>0)x+=` (${nm} NM)`;if(ng>0)x+=` (${ng} NG)`;st.textContent=`✓ Imported ${res.length} assignments`+x;st.className='paste-status success';}
 document.getElementById('pasteArea').addEventListener('paste',()=>{setTimeout(parsePastedText,100);});
 
-// ── Semester Exam ──
+// ── Semester ──
 let semBlocks=[{name:'1st Block',q1:'',q2:'',exam:''},{name:'2nd Block',q1:'',q2:'',exam:''},{name:'3rd Block',q1:'',q2:'',exam:''},{name:'4th Block',q1:'',q2:'',exam:''},{name:'5th Block',q1:'',q2:'',exam:''},{name:'6th Block',q1:'',q2:'',exam:''},{name:'7th Block',q1:'',q2:'',exam:''},{name:'8th Block',q1:'',q2:'',exam:''}];
+function letterGrade(v){if(v>=90)return{letter:'A',color:'#4ade80',cls:'a'};if(v>=80)return{letter:'B',color:'#6c8cff',cls:'b'};if(v>=70)return{letter:'C',color:'#fb923c',cls:'c'};if(v>=60)return{letter:'D',color:'#f59e0b',cls:'d'};return{letter:'F',color:'#f87171',cls:'f'};}
+function gradeToQP(v){if(v>=90)return 4.0;if(v>=80)return 3.0;if(v>=70)return 2.0;if(v>=60)return 1.0;return 0.0;}
+function buildSemester(){const el=document.getElementById('semesterBlocks');el.innerHTML='';semBlocks.forEach((b,i)=>{const div=document.createElement('div');div.className='sem-row';div.innerHTML=`<div class="sem-row-header"><input class="name-input" type="text" value="${esc(b.name)}" data-field="name" data-i="${i}" style="background:transparent;border:none;color:var(--text);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0;width:140px;outline:none;"><button class="delete-btn" onclick="removeSemBlock(${i})">✕</button></div><div class="sem-inputs"><div class="sem-field"><label>1st 9 Weeks</label><input type="number" value="${b.q1}" placeholder="—" data-field="q1" data-i="${i}"></div><div class="sem-field"><label>2nd 9 Weeks</label><input type="number" value="${b.q2}" placeholder="—" data-field="q2" data-i="${i}"></div><div class="sem-field"><label>Term Avg</label><input type="text" class="sem-computed" id="sem-term-${i}" value="—" readonly></div><div class="sem-field"><label>Exam Grade</label><input type="number" value="${b.exam}" placeholder="—" data-field="exam" data-i="${i}"></div><div class="sem-field"><label>Final Avg</label><input type="text" class="sem-computed" id="sem-final-${i}" value="—" readonly><div class="sem-letter" id="sem-letter-${i}"></div></div></div>`;el.appendChild(div);});el.querySelectorAll('input[data-field]').forEach(inp=>{inp.addEventListener('input',function(){semBlocks[parseInt(this.dataset.i)][this.dataset.field]=this.value;updateSemComputed(parseInt(this.dataset.i));});});semBlocks.forEach((_,i)=>updateSemComputed(i));}
+function updateSemComputed(i){const b=semBlocks[i],q1=parseFloat(b.q1),q2=parseFloat(b.q2),ex=parseFloat(b.exam),hasQ=!isNaN(q1)&&!isNaN(q2),termAvg=hasQ?(q1+q2)/2:null,final=hasQ&&!isNaN(ex)?(termAvg*0.8+ex*0.2):null,termEl=document.getElementById('sem-term-'+i),finalEl=document.getElementById('sem-final-'+i),letterEl=document.getElementById('sem-letter-'+i);if(termEl){termEl.value=termAvg!==null?termAvg.toFixed(2):'—';termEl.style.color=termAvg!==null?letterGrade(termAvg).color:'var(--text-muted)';}if(finalEl){finalEl.value=final!==null?final.toFixed(2):'—';if(final!==null){const lg=letterGrade(final);finalEl.style.color=lg.color;letterEl.textContent=lg.letter;letterEl.style.color=lg.color;}else{finalEl.style.color='var(--text-muted)';letterEl.textContent='';}}}
+function addSemBlock(){semBlocks.push({name:'Block '+(semBlocks.length+1),q1:'',q2:'',exam:''});buildSemester();}
+function removeSemBlock(i){if(semBlocks.length<=1)return;semBlocks.splice(i,1);buildSemester();}
 
-function letterGrade(v){
-  if(v>=90)return{letter:'A',color:'#4ade80'};
-  if(v>=80)return{letter:'B',color:'#6c8cff'};
-  if(v>=70)return{letter:'C',color:'#fb923c'};
-  if(v>=60)return{letter:'D',color:'#f59e0b'};
-  return{letter:'F',color:'#f87171'};
+// ── GPA / QPA ──
+let historyCourses=[], currentCourses=[];
+
+function parseHistoryCourses(){
+  const raw=document.getElementById('gpaHistoryArea').value.trim();
+  const st=document.getElementById('gpaHistoryStatus');
+  if(!raw){st.textContent='Paste history courses first';st.className='paste-status error';return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  historyCourses=[];
+  for(const line of lines){
+    // Skip headers and non-data rows
+    if(/^Course\s*Name/i.test(line))continue;
+    if(/^History\s*Courses/i.test(line))continue;
+    // Split by tab
+    const parts=line.split('\t').map(p=>p.trim());
+    // We need to find: courseName, finalGrade, qps, crEarned
+    // Format: CourseName | TeacherName | SubjectArea | FinalGrade | QPs | CrAttempted | CrEarned
+    // Some rows are school names or date rows - skip if no numbers
+    const nums=parts.filter(p=>/^\d+\.?\d*$/.test(p)).map(p=>parseFloat(p));
+    if(nums.length<3)continue;
+    // Find columns with the grade pattern (number with .0000)
+    let gradeCols=[];
+    for(let j=0;j<parts.length;j++){
+      if(/^\d+\.?\d{2,}$/.test(parts[j]))gradeCols.push(j);
+    }
+    if(gradeCols.length<4)continue;
+    const courseName=parts[0];
+    if(!courseName||courseName.length<2)continue;
+    // Skip school name rows and grade/date rows
+    if(/^(Madison|Rosa|High School|Middle School)/i.test(courseName)&&gradeCols.length<4)continue;
+    if(/Grade:/i.test(line))continue;
+    const finalGrade=parseFloat(parts[gradeCols[0]]);
+    const qps=parseFloat(parts[gradeCols[1]]);
+    const crEarned=parseFloat(parts[gradeCols[gradeCols.length-1]]);
+    if(isNaN(finalGrade)||isNaN(qps)||isNaN(crEarned))continue;
+    if(finalGrade<10||finalGrade>150)continue;
+    if(crEarned<=0||crEarned>5)continue;
+    historyCourses.push({name:courseName,grade:finalGrade,qps:qps,credits:crEarned,source:'history'});
+  }
+  if(!historyCourses.length){st.textContent='No courses found. Check format.';st.className='paste-status error';return;}
+  st.textContent=`✓ Imported ${historyCourses.length} history courses`;st.className='paste-status success';
+  renderGPA();
 }
 
-function buildSemester(){
-  const el=document.getElementById('semesterBlocks');el.innerHTML='';
-  semBlocks.forEach((b,i)=>{
-    const div=document.createElement('div');div.className='sem-row';
-    div.innerHTML=`<div class="sem-row-header"><input class="name-input" type="text" value="${esc(b.name)}" data-field="name" data-i="${i}" style="background:transparent;border:none;color:var(--text);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0;width:140px;outline:none;"><button class="delete-btn" onclick="removeSemBlock(${i})">✕</button></div><div class="sem-inputs"><div class="sem-field"><label>1st 9 Weeks</label><input type="number" value="${b.q1}" placeholder="—" data-field="q1" data-i="${i}"></div><div class="sem-field"><label>2nd 9 Weeks</label><input type="number" value="${b.q2}" placeholder="—" data-field="q2" data-i="${i}"></div><div class="sem-field"><label>Term Avg</label><input type="text" class="sem-computed" id="sem-term-${i}" value="—" readonly></div><div class="sem-field"><label>Exam Grade</label><input type="number" value="${b.exam}" placeholder="—" data-field="exam" data-i="${i}"></div><div class="sem-field"><label>Final Avg</label><input type="text" class="sem-computed" id="sem-final-${i}" value="—" readonly><div class="sem-letter" id="sem-letter-${i}"></div></div></div>`;
-    el.appendChild(div);
-  });
-  // Attach listeners WITHOUT re-rendering
-  el.querySelectorAll('input[data-field]').forEach(inp=>{
-    inp.addEventListener('input',function(){
-      const idx=parseInt(this.dataset.i),field=this.dataset.field;
-      semBlocks[idx][field]=this.value;
-      updateSemComputed(idx);
+function parseCurrentCourses(){
+  const raw=document.getElementById('gpaCurrentArea').value.trim();
+  const st=document.getElementById('gpaCurrentStatus');
+  if(!raw){st.textContent='Paste current grades first';st.className='paste-status error';return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  currentCourses=[];
+  for(const line of lines){
+    if(/^Course\s/i.test(line)&&/Period/i.test(line))continue;
+    if(/Exam\s*Grades/i.test(line))continue;
+    if(/Dismissal/i.test(line))continue;
+    const parts=line.split('\t').map(p=>p.trim());
+    if(parts.length<3)continue;
+    const courseName=parts[0];
+    if(!courseName||courseName.length<2)continue;
+    // Collect all valid term grades (skip period column at index 1)
+    const termGrades=[];
+    for(let j=2;j<parts.length;j++){
+      const v=parts[j].trim();
+      const n=parseFloat(v);
+      if(!isNaN(n)&&n>0&&n<=150)termGrades.push(n);
+    }
+    if(termGrades.length===0)continue;
+    // Each term grade is a separate entry for QPA
+    // Average for GPA
+    const avg=termGrades.reduce((s,v)=>s+v,0)/termGrades.length;
+    currentCourses.push({
+      name:courseName,
+      grade:avg,
+      termGrades:termGrades,
+      credits:1.0,
+      source:'current'
+    });
+  }
+  if(!currentCourses.length){st.textContent='No courses found. Check format.';st.className='paste-status error';return;}
+  st.textContent=`✓ Imported ${currentCourses.length} current courses`;st.className='paste-status success';
+  renderGPA();
+}
+
+function renderGPA(){
+  const wrapper=document.getElementById('gpaTableWrapper');
+  const tbody=document.getElementById('gpaBody');
+  const resDiv=document.getElementById('gpaResults');
+  const allCourses=[...historyCourses,...currentCourses];
+  if(!allCourses.length){wrapper.style.display='none';resDiv.innerHTML='';return;}
+  wrapper.style.display='';
+
+  // ── Calculate GPA: weighted by credits ──
+  let gpaTotalW=0, gpaTotalC=0;
+  historyCourses.forEach(c=>{gpaTotalW+=c.grade*c.credits;gpaTotalC+=c.credits;});
+  currentCourses.forEach(c=>{gpaTotalW+=c.grade*c.credits;gpaTotalC+=c.credits;});
+  const gpa=gpaTotalC>0?(gpaTotalW/gpaTotalC):0;
+
+  // ── Calculate QPA: each 9-weeks counts separately ──
+  // History: use QPs * credits from data
+  let qpaTotalW=0, qpaTotalC=0;
+  historyCourses.forEach(c=>{qpaTotalW+=c.qps*c.credits;qpaTotalC+=c.credits;});
+  // Current: each individual term grade → QP, weighted as credits/numTerms per term
+  currentCourses.forEach(c=>{
+    const n=c.termGrades.length;
+    const perTermCredit=c.credits/n;
+    c.termGrades.forEach(g=>{
+      qpaTotalW+=gradeToQP(g)*perTermCredit;
+      qpaTotalC+=perTermCredit;
     });
   });
-  semBlocks.forEach((_,i)=>updateSemComputed(i));
+  const qpa=qpaTotalC>0?(qpaTotalW/qpaTotalC):0;
+
+  const gc=v=>v>=90?'color-green':v>=75?'color-orange':'color-red';
+  const qc=v=>v>=3.5?'color-green':v>=2.5?'color-orange':'color-red';
+  const totalCourses=allCourses.length;
+  const totalCredits=gpaTotalC;
+
+  resDiv.innerHTML=`
+    <div class="result-card"><div class="result-label">GPA (out of 100)</div><div class="result-value ${gc(gpa)}">${gpa.toFixed(2)}</div><div class="result-detail">${totalCourses} courses · ${totalCredits.toFixed(1)} credits</div></div>
+    <div class="result-card"><div class="result-label">QPA (4.0 scale)</div><div class="result-value ${qc(qpa)}">${qpa.toFixed(3)}</div><div class="result-detail">Each 9-weeks counted separately</div></div>
+  `;
+
+  // ── Render table ──
+  tbody.innerHTML='';
+  if(historyCourses.length>0){
+    const hdr=document.createElement('tr');hdr.className='section-header';
+    hdr.innerHTML=`<td colspan="5">History Courses (${historyCourses.length})</td>`;
+    tbody.appendChild(hdr);
+    historyCourses.forEach(c=>{
+      const lg=letterGrade(c.grade);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="course-name" title="${esc(c.name)}">${esc(c.name)}</td><td class="num">${c.grade.toFixed(1)}</td><td class="num">${c.qps.toFixed(1)}</td><td class="num">${c.credits.toFixed(1)}</td><td class="num"><span class="gpa-tag gpa-tag-${lg.cls}">${lg.letter}</span></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  if(currentCourses.length>0){
+    const hdr=document.createElement('tr');hdr.className='section-header';
+    hdr.innerHTML=`<td colspan="5">Current Year (${currentCourses.length})</td>`;
+    tbody.appendChild(hdr);
+    currentCourses.forEach(c=>{
+      const lg=letterGrade(c.grade);
+      const terms=c.termGrades.map(t=>t.toFixed(0)).join(', ');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="course-name" title="${esc(c.name)}">${esc(c.name)}</td><td class="num" title="Terms: ${terms}">${c.grade.toFixed(1)}</td><td class="num">${gradeToQP(c.grade).toFixed(1)}</td><td class="num">${c.credits.toFixed(1)}</td><td class="num"><span class="gpa-tag gpa-tag-${lg.cls}">${lg.letter}</span></td>`;
+      tbody.appendChild(tr);
+    });
+  }
 }
 
-function updateSemComputed(i){
-  const b=semBlocks[i];
-  const q1=parseFloat(b.q1),q2=parseFloat(b.q2),ex=parseFloat(b.exam);
-  const hasQ=!isNaN(q1)&&!isNaN(q2);
-  const termAvg=hasQ?(q1+q2)/2:null;
-  const hasAll=hasQ&&!isNaN(ex);
-  const final=hasAll?(termAvg*0.8+ex*0.2):null;
-  const termEl=document.getElementById('sem-term-'+i);
-  const finalEl=document.getElementById('sem-final-'+i);
-  const letterEl=document.getElementById('sem-letter-'+i);
-  if(termEl){
-    termEl.value=termAvg!==null?termAvg.toFixed(2):'—';
-    if(termAvg!==null){const lg=letterGrade(termAvg);termEl.style.color=lg.color;}
-    else termEl.style.color='var(--text-muted)';
-  }
-  if(finalEl){
-    finalEl.value=final!==null?final.toFixed(2):'—';
-    if(final!==null){const lg=letterGrade(final);finalEl.style.color=lg.color;letterEl.textContent=lg.letter;letterEl.style.color=lg.color;}
-    else{finalEl.style.color='var(--text-muted)';letterEl.textContent='';}
-  }
+function resetGPA(){
+  historyCourses=[];currentCourses=[];
+  document.getElementById('gpaHistoryArea').value='';
+  document.getElementById('gpaCurrentArea').value='';
+  document.getElementById('gpaHistoryStatus').textContent='';
+  document.getElementById('gpaCurrentStatus').textContent='';
+  document.getElementById('gpaHistoryStatus').className='paste-status';
+  document.getElementById('gpaCurrentStatus').className='paste-status';
+  document.getElementById('gpaTableWrapper').style.display='none';
+  document.getElementById('gpaResults').innerHTML='';
 }
-
-function addSemBlock(){semBlocks.push({name:'Block '+( semBlocks.length+1),q1:'',q2:'',exam:''});buildSemester();}
-function removeSemBlock(i){if(semBlocks.length<=1)return;semBlocks.splice(i,1);buildSemester();}
+document.getElementById('gpaHistoryArea').addEventListener('paste',()=>{setTimeout(parseHistoryCourses,100);});
+document.getElementById('gpaCurrentArea').addEventListener('paste',()=>{setTimeout(parseCurrentCourses,100);});
 
 render();
 buildSemester();
