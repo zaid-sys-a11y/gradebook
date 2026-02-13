@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zaid's Perfect MC Gradebook Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #232734; --border: #2e3345;
+    --text: #e8eaf0; --text-muted: #8b90a5; --accent: #6c8cff;
+    --accent-glow: rgba(108, 140, 255, 0.15); --green: #4ade80; --red: #f87171;
+    --orange: #fb923c; --minor-tag: #3b82f6; --major-tag: #a855f7; --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 30px 20px; }
+
+  /* Auth Screen */
+  .auth-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .auth-screen.hidden { display: none; }
+  .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; text-align: center; width: 380px; }
+  .auth-box h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #6c8cff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .auth-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .auth-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 10px; }
+  .auth-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .auth-btn { width: 100%; background: linear-gradient(135deg, #6c8cff, #a855f7); border: none; color: white; padding: 11px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; margin-bottom: 10px; }
+  .auth-btn:hover { opacity: 0.85; }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .auth-toggle { font-size: 13px; color: var(--text-muted); cursor: pointer; }
+  .auth-toggle span { color: var(--accent); font-weight: 600; }
+  .auth-toggle span:hover { text-decoration: underline; }
+  .auth-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 18px; }
+
+  /* Blocked Screen */
+  .blocked-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .blocked-screen.hidden { display: none; }
+  .blocked-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; text-align: center; width: 380px; }
+  .blocked-box h2 { font-size: 20px; color: var(--red); margin-bottom: 10px; }
+  .blocked-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* Top Bar */
+  .top-bar { position: fixed; top: 0; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; z-index: 50; display: none; }
+  .top-bar.visible { display: flex; }
+  .user-badge { display: flex; align-items: center; gap: 8px; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6c8cff, #a855f7); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .admin-tag { font-size: 10px; background: rgba(168,85,247,0.2); color: var(--major-tag); padding: 2px 8px; border-radius: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .top-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 14px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .top-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .top-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  /* Container */
+  .container { max-width: 860px; margin: 0 auto; padding-top: 50px; }
+  .container.hidden { display: none; }
+  header { text-align: center; margin-bottom: 36px; }
+  header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; background: linear-gradient(135deg, #6c8cff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  .settings { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .setting-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; flex: 1; min-width: 180px; }
+  .setting-card label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+  .setting-card input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 500; outline: none; transition: border 0.2s; }
+  .setting-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  /* Paste */
+  .paste-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+  .paste-header { display: flex; align-items: center; margin-bottom: 12px; }
+  .paste-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .paste-area { width: 100%; min-height: 100px; background: var(--surface2); border: 2px dashed var(--border); border-radius: 8px; padding: 14px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; resize: vertical; transition: border 0.2s; line-height: 1.6; }
+  .paste-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .paste-area::placeholder { color: var(--text-muted); }
+  .paste-actions { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+  .parse-btn { background: linear-gradient(135deg, #6c8cff, #a855f7); border: none; color: white; padding: 9px 20px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+  .parse-btn:hover { opacity: 0.85; }
+  .paste-status { font-size: 12px; color: var(--text-muted); }
+  .paste-status.success { color: var(--green); }
+  .paste-status.error { color: var(--red); }
+
+  /* Table */
+  .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--surface2); padding: 12px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; text-align: left; border-bottom: 1px solid var(--border); }
+  thead th:last-child { text-align: center; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(108, 140, 255, 0.04); }
+  tbody td { padding: 10px 16px; font-size: 14px; vertical-align: middle; }
+  tbody td input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; outline: none; transition: border 0.2s; width: 100%; }
+  tbody td input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  td input.name-input { min-width: 160px; font-family: 'DM Sans', sans-serif; }
+  td input.num-input { width: 70px; text-align: center; }
+  td input.grade-input { width: 80px; text-align: center; }
+  td input.grade-input.nm { color: var(--text-muted); font-style: italic; }
+  .type-toggle { display: flex; gap: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .type-toggle button { flex: 1; padding: 7px 12px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: all 0.2s; background: var(--surface2); color: var(--text-muted); white-space: nowrap; }
+  .type-toggle button.active-minor { background: rgba(59, 130, 246, 0.2); color: var(--minor-tag); }
+  .type-toggle button.active-major { background: rgba(168, 85, 247, 0.2); color: var(--major-tag); }
+  .delete-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px 8px; border-radius: 4px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+  .delete-btn:hover { color: var(--red); background: rgba(248, 113, 113, 0.1); }
+  .add-row { display: flex; justify-content: center; padding: 12px; }
+  .add-btn { background: var(--surface2); border: 1px dashed var(--border); color: var(--text-muted); padding: 8px 24px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  /* Results */
+  .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 24px; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; }
+  .result-card.final { border-color: var(--accent); background: linear-gradient(135deg, rgba(108,140,255,0.08), rgba(168,85,247,0.08)); grid-column: 1 / -1; }
+  .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+  .result-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 600; }
+  .result-card.final .result-value { font-size: 36px; background: linear-gradient(135deg, #6c8cff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .result-detail { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .color-green { color: var(--green); }
+  .color-orange { color: var(--orange); }
+  .color-red { color: var(--red); }
+
+  /* Admin Panel */
+  .admin-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+  .admin-panel.hidden { display: none; }
+  .admin-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .admin-title .admin-tag { font-size: 11px; }
+  .user-list { display: flex; flex-direction: column; gap: 8px; }
+  .user-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; }
+  .user-row.blocked { opacity: 0.5; border-color: var(--red); }
+  .user-info { display: flex; flex-direction: column; gap: 2px; }
+  .user-info .name { font-size: 14px; font-weight: 500; }
+  .user-info .email { font-size: 12px; color: var(--text-muted); }
+  .user-info .joined { font-size: 11px; color: var(--text-muted); }
+  .kick-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 14px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .kick-btn:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.1); }
+  .kick-btn.unblock { color: var(--green); border-color: var(--green); }
+  .kick-btn.unblock:hover { background: rgba(74,222,128,0.1); }
+  .no-users { color: var(--text-muted); font-size: 13px; text-align: center; padding: 16px; }
+
+  @media (max-width: 600px) {
+    .settings { flex-direction: column; }
+    td input.name-input { min-width: 100px; }
+    thead th, tbody td { padding: 8px 10px; font-size: 12px; }
+    .top-bar { padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <h2>Zaid's Gradebook</h2>
+    <p id="authSubtitle">Sign in to continue</p>
+    <input type="text" id="authName" placeholder="Full Name" style="display:none;">
+    <input type="email" id="authEmail" placeholder="Email">
+    <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')handleAuth()">
+    <button class="auth-btn" id="authBtn" onclick="handleAuth()">Sign In</button>
+    <div class="auth-toggle" id="authToggle">
+      Don't have an account? <span onclick="toggleAuthMode()">Sign Up</span>
+    </div>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- Blocked Screen -->
+<div class="blocked-screen hidden" id="blockedScreen">
+  <div class="blocked-box">
+    <h2>Access Revoked</h2>
+    <p>Your access has been removed by the admin.</p>
+    <button class="auth-btn" onclick="signOutUser()">Sign Out</button>
+  </div>
+</div>
+
+<!-- Top Bar -->
+<div class="top-bar" id="topBar">
+  <div class="user-badge">
+    <div class="user-avatar" id="userAvatar"></div>
+    <span class="user-name" id="userName"></span>
+    <span class="admin-tag" id="adminTag" style="display:none;">Admin</span>
+  </div>
+  <button class="top-btn" id="adminToggleBtn" style="display:none;" onclick="toggleAdminPanel()">Manage Users</button>
+  <button class="top-btn danger" onclick="signOutUser()">Sign Out</button>
+</div>
+
+<!-- Main App -->
+<div class="container hidden" id="mainContainer">
+  <header>
+    <h1>Zaid's Perfect MC Gradebook Calculator</h1>
+  </header>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel hidden" id="adminPanel">
+    <div class="admin-title">Manage Users <span class="admin-tag">Admin</span></div>
+    <div class="user-list" id="userList">
+      <div class="no-users">Loading users...</div>
+    </div>
+  </div>
+
+  <div class="settings">
+    <div class="setting-card">
+      <label>Minor Weight (%)</label>
+      <input type="number" id="minorWeight" value="34" min="0" max="100" oninput="calculate()">
+    </div>
+    <div class="setting-card">
+      <label>Major Weight (%)</label>
+      <input type="number" id="majorWeight" value="66" min="0" max="100" oninput="calculate()">
+    </div>
+    <div class="setting-card">
+      <label>Final Boost (%)</label>
+      <input type="number" id="boost" value="10" min="0" max="100" oninput="calculate()">
+    </div>
+  </div>
+
+  <div class="paste-section">
+    <div class="paste-header">
+      <span class="paste-title">Paste Grades from Gradebook</span>
+    </div>
+    <textarea class="paste-area" id="pasteArea" placeholder="Copy and paste your gradebook table here exactly as it appears..."></textarea>
+    <div class="paste-actions">
+      <button class="parse-btn" onclick="parsePastedText()">Import Grades</button>
+      <button class="add-btn" onclick="resetAll()" style="margin-left: 4px;">Reset</button>
+      <span class="paste-status" id="pasteStatus"></span>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Assignment</th><th>Type</th><th>Weight</th><th>Grade</th><th></th></tr></thead>
+      <tbody id="assignmentBody"></tbody>
+    </table>
+    <div class="add-row">
+      <button class="add-btn" onclick="addRow()">+ Add Assignment</button>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase Config ──
+firebase.initializeApp({
+  apiKey: "AIzaSyCs6Y3xz-OQ75b1iqiaKlftTzKL58_TUQ0",
+  authDomain: "zaids-gradebook.firebaseapp.com",
+  projectId: "zaids-gradebook",
+  storageBucket: "zaids-gradebook.firebasestorage.app",
+  messagingSenderId: "225222960158",
+  appId: "1:225222960158:web:271b3159c3210829833a0f"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+const ADMIN_EMAIL = 'abdrabozaid@gmail.com';
+
+let isSignUp = false;
+let currentUser = null;
+let isAdmin = false;
+
+// ── Auth Functions ──
+function toggleAuthMode() {
+  isSignUp = !isSignUp;
+  document.getElementById('authName').style.display = isSignUp ? 'block' : 'none';
+  document.getElementById('authBtn').textContent = isSignUp ? 'Sign Up' : 'Sign In';
+  document.getElementById('authSubtitle').textContent = isSignUp ? 'Create an account' : 'Sign in to continue';
+  document.getElementById('authToggle').innerHTML = isSignUp
+    ? 'Already have an account? <span onclick="toggleAuthMode()">Sign In</span>'
+    : 'Don\'t have an account? <span onclick="toggleAuthMode()">Sign Up</span>';
+  document.getElementById('authError').textContent = '';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('authName').value.trim();
+  const errorEl = document.getElementById('authError');
+  const btn = document.getElementById('authBtn');
+
+  errorEl.textContent = '';
+  if (!email || !password) { errorEl.textContent = 'Please fill in all fields'; return; }
+  if (isSignUp && !name) { errorEl.textContent = 'Please enter your name'; return; }
+
+  btn.disabled = true;
+  btn.textContent = isSignUp ? 'Creating account...' : 'Signing in...';
+
+  try {
+    let userCred;
+    if (isSignUp) {
+      userCred = await auth.createUserWithEmailAndPassword(email, password);
+      // Save user to Firestore
+      await db.collection('users').doc(userCred.user.uid).set({
+        name: name,
+        email: email,
+        blocked: false,
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      userCred = await auth.signInWithEmailAndPassword(email, password);
+    }
+  } catch (err) {
+    let msg = 'Something went wrong';
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Invalid email or password';
+    else if (err.code === 'auth/email-already-in-use') msg = 'Email already in use. Try signing in.';
+    else if (err.code === 'auth/weak-password') msg = 'Password must be at least 6 characters';
+    else if (err.code === 'auth/invalid-email') msg = 'Invalid email address';
+    errorEl.textContent = msg;
+  }
+
+  btn.disabled = false;
+  btn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+}
+
+function signOutUser() {
+  auth.signOut();
+}
+
+// ── Auth State Listener ──
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    isAdmin = user.email === ADMIN_EMAIL;
+
+    // Check if blocked
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (userDoc.exists && userDoc.data().blocked) {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('blockedScreen').classList.remove('hidden');
+      document.getElementById('mainContainer').classList.add('hidden');
+      document.getElementById('topBar').classList.remove('visible');
+      return;
+    }
+
+    // Get display name
+    let displayName = '';
+    if (userDoc.exists && userDoc.data().name) {
+      displayName = userDoc.data().name;
+    } else {
+      // Extract from email
+      const local = user.email.split('@')[0];
+      displayName = local.replace(/[._-]/g, ' ').replace(/\d+/g, '').trim()
+        .split(/\s+/).filter(p => p).map(p => p[0].toUpperCase() + p.slice(1)).join(' ') || local;
+    }
+
+    const initials = displayName.split(/\s+/).map(p => p[0]).join('').toUpperCase().slice(0, 2);
+
+    // Show app
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('blockedScreen').classList.add('hidden');
+    document.getElementById('mainContainer').classList.remove('hidden');
+    document.getElementById('topBar').classList.add('visible');
+    document.getElementById('userName').textContent = displayName;
+    document.getElementById('userAvatar').textContent = initials;
+
+    if (isAdmin) {
+      document.getElementById('adminTag').style.display = '';
+      document.getElementById('adminToggleBtn').style.display = '';
+      loadUsers();
+    } else {
+      document.getElementById('adminTag').style.display = 'none';
+      document.getElementById('adminToggleBtn').style.display = 'none';
+      document.getElementById('adminPanel').classList.add('hidden');
+    }
+  } else {
+    currentUser = null;
+    isAdmin = false;
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('blockedScreen').classList.add('hidden');
+    document.getElementById('mainContainer').classList.add('hidden');
+    document.getElementById('topBar').classList.remove('visible');
+    document.getElementById('adminPanel').classList.add('hidden');
+  }
+});
+
+// ── Admin Functions ──
+function toggleAdminPanel() {
+  const panel = document.getElementById('adminPanel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) loadUsers();
+}
+
+async function loadUsers() {
+  const listEl = document.getElementById('userList');
+  listEl.innerHTML = '<div class="no-users">Loading...</div>';
+
+  try {
+    const snapshot = await db.collection('users').orderBy('joinedAt', 'desc').get();
+    if (snapshot.empty) {
+      listEl.innerHTML = '<div class="no-users">No users yet</div>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const isSelf = currentUser && doc.id === currentUser.uid;
+      const joined = data.joinedAt ? new Date(data.joinedAt.seconds * 1000).toLocaleDateString() : 'Unknown';
+
+      const row = document.createElement('div');
+      row.className = 'user-row' + (data.blocked ? ' blocked' : '');
+      row.innerHTML = `
+        <div class="user-info">
+          <span class="name">${escapeHtml(data.name || 'Unknown')}${isSelf ? ' (you)' : ''}${data.email === ADMIN_EMAIL ? ' <span class="admin-tag">Admin</span>' : ''}</span>
+          <span class="email">${escapeHtml(data.email || '')}</span>
+          <span class="joined">Joined ${joined}</span>
+        </div>
+        ${!isSelf && data.email !== ADMIN_EMAIL ? `
+          <button class="kick-btn ${data.blocked ? 'unblock' : ''}" onclick="toggleBlock('${doc.id}', ${!data.blocked})">
+            ${data.blocked ? 'Unblock' : 'Block'}
+          </button>
+        ` : ''}
+      `;
+      listEl.appendChild(row);
+    });
+  } catch (err) {
+    console.error(err);
+    listEl.innerHTML = '<div class="no-users">Error loading users</div>';
+  }
+}
+
+async function toggleBlock(uid, block) {
+  try {
+    await db.collection('users').doc(uid).update({ blocked: block });
+    loadUsers();
+  } catch (err) {
+    console.error('Error updating user:', err);
+  }
+}
+
+// ── Gradebook Logic ──
+let assignments = [{ name: '', type: 'minor', weight: 1.0, grade: '' }];
+
+function isGraded(a) {
+  const g = String(a.grade).trim().toUpperCase();
+  if (g === '' || g === 'NM') return false;
+  return !isNaN(parseFloat(g));
+}
+function gradeValue(a) { return parseFloat(a.grade); }
+function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function render() {
+  const tbody = document.getElementById('assignmentBody');
+  tbody.innerHTML = '';
+  assignments.forEach((a, i) => {
+    const isNM = String(a.grade).trim().toUpperCase() === 'NM';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="name-input" type="text" placeholder="Assignment name" value="${escapeHtml(a.name)}" oninput="updateField(${i}, 'name', this.value)"></td>
+      <td><div class="type-toggle">
+        <button class="${a.type === 'minor' ? 'active-minor' : ''}" onclick="setType(${i}, 'minor')">Minor</button>
+        <button class="${a.type === 'major' ? 'active-major' : ''}" onclick="setType(${i}, 'major')">Major</button>
+      </div></td>
+      <td><input class="num-input" type="number" step="0.1" min="0" value="${a.weight}" oninput="updateField(${i}, 'weight', parseFloat(this.value) || 0)"></td>
+      <td><input class="grade-input ${isNM ? 'nm' : ''}" type="text" placeholder="—" value="${escapeHtml(String(a.grade))}" oninput="updateField(${i}, 'grade', this.value)"></td>
+      <td><button class="delete-btn" onclick="removeRow(${i})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  calculate();
+}
+
+function updateField(i, field, value) {
+  assignments[i][field] = value;
+  calculate();
+  if (field === 'grade') {
+    const input = document.querySelectorAll('.grade-input')[i];
+    if (input) input.classList.toggle('nm', String(value).trim().toUpperCase() === 'NM');
+  }
+}
+
+function setType(i, type) { assignments[i].type = type; render(); }
+function addRow() { assignments.push({ name: '', type: 'minor', weight: 1.0, grade: '' }); render(); }
+function removeRow(i) { if (assignments.length <= 1) return; assignments.splice(i, 1); render(); }
+
+function resetAll() {
+  assignments = [{ name: '', type: 'minor', weight: 1.0, grade: '' }];
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('pasteStatus').textContent = '';
+  document.getElementById('pasteStatus').className = 'paste-status';
+  render();
+}
+
+function calculate() {
+  const minorPct = parseFloat(document.getElementById('minorWeight').value) / 100 || 0;
+  const majorPct = parseFloat(document.getElementById('majorWeight').value) / 100 || 0;
+  const boostPct = parseFloat(document.getElementById('boost').value) / 100 || 0;
+  const boostMult = 1 + boostPct;
+
+  const minors = assignments.filter(a => a.type === 'minor' && isGraded(a));
+  const majors = assignments.filter(a => a.type === 'major' && isGraded(a));
+
+  let minorAvg = null, droppedNote = '';
+  if (minors.length > 1) {
+    let lowestIdx = 0, lowestGrade = gradeValue(minors[0]);
+    for (let i = 1; i < minors.length; i++) {
+      if (gradeValue(minors[i]) < lowestGrade) { lowestGrade = gradeValue(minors[i]); lowestIdx = i; }
+    }
+    const kept = minors.filter((_, i) => i !== lowestIdx);
+    const tw = kept.reduce((s, a) => s + a.weight, 0);
+    minorAvg = kept.reduce((s, a) => s + a.weight * gradeValue(a), 0) / tw;
+    droppedNote = `Dropped: ${minors[lowestIdx].name || 'Unnamed'} (${lowestGrade})`;
+  } else if (minors.length === 1) { minorAvg = gradeValue(minors[0]); }
+
+  let majorAvg = null;
+  if (majors.length > 0) {
+    const tw = majors.reduce((s, a) => s + a.weight, 0);
+    majorAvg = majors.reduce((s, a) => s + a.weight * gradeValue(a), 0) / tw;
+  }
+
+  let overall = null;
+  if (minorAvg !== null && majorAvg !== null) overall = minorPct * minorAvg + majorPct * majorAvg;
+  else if (minorAvg !== null) overall = minorAvg;
+  else if (majorAvg !== null) overall = majorAvg;
+
+  let finalGrade = overall !== null ? overall * boostMult : null;
+  const resultsDiv = document.getElementById('results');
+
+  if (overall === null) {
+    resultsDiv.innerHTML = `<div class="result-card final"><div class="result-label">Final Grade</div><div class="result-value">—</div><div class="result-detail">Enter grades to calculate</div></div>`;
+    return;
+  }
+
+  const gc = (v) => v >= 90 ? 'color-green' : v >= 75 ? 'color-orange' : 'color-red';
+  const nmCount = assignments.filter(a => String(a.grade).trim().toUpperCase() === 'NM').length;
+  const nmNote = nmCount > 0 ? ` · ${nmCount} NM excluded` : '';
+
+  resultsDiv.innerHTML = `
+    <div class="result-card"><div class="result-label">Minor Avg</div><div class="result-value ${minorAvg !== null ? gc(minorAvg) : ''}">${minorAvg !== null ? minorAvg.toFixed(2) + '%' : '—'}</div><div class="result-detail">${minors.length} graded</div></div>
+    <div class="result-card"><div class="result-label">Major Avg</div><div class="result-value ${majorAvg !== null ? gc(majorAvg) : ''}">${majorAvg !== null ? majorAvg.toFixed(2) + '%' : '—'}</div><div class="result-detail">${majors.length} graded</div></div>
+    <div class="result-card"><div class="result-label">Before Boost</div><div class="result-value ${gc(overall)}">${overall.toFixed(2)}%</div><div class="result-detail">${(minorPct*100).toFixed(0)}% minor · ${(majorPct*100).toFixed(0)}% major</div></div>
+    <div class="result-card final"><div class="result-label">Final Grade (×${boostMult.toFixed(2)})</div><div class="result-value">${finalGrade.toFixed(2)}%</div><div class="result-detail">${droppedNote}${nmNote}</div></div>
+  `;
+}
+
+// ── Paste Parser ──
+function parsePastedText() {
+  const raw = document.getElementById('pasteArea').value.trim();
+  const status = document.getElementById('pasteStatus');
+  if (!raw) { status.textContent = 'Paste your gradebook table first'; status.className = 'paste-status error'; return; }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const results = [];
+
+  for (const line of lines) {
+    if (/^\s*date\s/i.test(line) && /assignment/i.test(line)) continue;
+    const hasMinor = /minor/i.test(line);
+    const hasMajor = /major/i.test(line);
+    if (!hasMinor && !hasMajor) continue;
+    const type = hasMajor ? 'major' : 'minor';
+
+    let grade = 'NM';
+    if (/\bNM\b/i.test(line)) {
+      grade = 'NM';
+    } else {
+      const allGradeMatches = [...line.matchAll(/(\d+\.?\d*)\s*\/\s*(\d+)/g)];
+      const gradeMatch = allGradeMatches.filter(m => parseFloat(m[2]) === 100).pop();
+      if (gradeMatch) { grade = String(parseFloat(gradeMatch[1])); }
+    }
+
+    let weight = 1.0;
+    let lineWithoutGrade = line.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g, '').replace(/\bNM\b/gi, '');
+    const weightMatches = lineWithoutGrade.match(/\b(\d+\.\d+)\b/g);
+    if (weightMatches) { for (const wm of weightMatches) { const val = parseFloat(wm); if (val >= 0.1 && val <= 5.0) { weight = val; break; } } }
+    const tabParts = line.split(/\t/);
+    if (tabParts.length >= 4) { for (let ti = 2; ti < tabParts.length; ti++) { const c = tabParts[ti].trim(); const v = parseFloat(c); if (!isNaN(v) && v >= 0.1 && v <= 5.0 && c.match(/^\d+\.?\d*$/)) { weight = v; break; } } }
+
+    let name = line;
+    name = name.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '');
+    name = name.replace(/(Minor|Major)\s*(Assignment)?\s*\d*/gi, '');
+    name = name.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g, '');
+    name = name.replace(/\bNM\b/gi, '');
+    name = name.replace(new RegExp('\\b' + weight.toFixed(1).replace('.', '\\.') + '\\b'), '');
+    name = name.replace(/\b(Date|Type|Weight|Grade)\b/gi, '');
+    name = name.replace(/\t/g, ' ').replace(/\s+/g, ' ').trim();
+    if (name.length < 1) continue;
+
+    results.push({ name, type, weight, grade });
+  }
+
+  if (results.length === 0) { status.textContent = 'No assignments found. Make sure you copied the full table.'; status.className = 'paste-status error'; return; }
+
+  assignments = results;
+  render();
+  const nmCount = results.filter(a => a.grade === 'NM').length;
+  status.textContent = `✓ Imported ${results.length} assignments` + (nmCount > 0 ? ` (${nmCount} NM)` : '');
+  status.className = 'paste-status success';
+}
+
+document.getElementById('pasteArea').addEventListener('paste', () => { setTimeout(parsePastedText, 100); });
+
+// Init
+render();
+</script>
+</body>
+</html>
