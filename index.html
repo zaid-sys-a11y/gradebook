@@ -15,8 +15,6 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 30px 20px; }
-
-  /* Auth */
   .auth-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
   .auth-screen.hidden { display: none; }
   .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
@@ -31,15 +29,11 @@
   .auth-toggle span { color: var(--accent); font-weight: 600; }
   .auth-toggle span:hover { text-decoration: underline; }
   .auth-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 18px; }
-
-  /* Blocked */
   .blocked-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
   .blocked-screen.hidden { display: none; }
   .blocked-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; width: 400px; }
   .blocked-box h2 { font-size: 20px; color: var(--red); margin-bottom: 10px; }
   .blocked-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
-
-  /* Top Bar */
   .top-bar { position: fixed; top: 0; left: 0; right: 0; background: rgba(10,12,16,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 24px; display: none; justify-content: flex-end; align-items: center; gap: 12px; z-index: 50; }
   .top-bar.visible { display: flex; }
   .user-badge { display: flex; align-items: center; gap: 8px; }
@@ -49,35 +43,25 @@
   .top-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
   .top-btn:hover { border-color: var(--accent); color: var(--accent); }
   .top-btn.danger:hover { border-color: var(--red); color: var(--red); }
-
-  /* Container */
   .container { max-width: 860px; margin: 0 auto; padding-top: 50px; }
   .container.hidden { display: none; }
-
-  /* Header */
   header { text-align: center; margin-bottom: 28px; position: relative; }
   .header-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px 4px 8px; margin-bottom: 12px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
   .header-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease infinite; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
   header h1 { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -1px; background: linear-gradient(135deg, #6c8cff 0%, #a855f7 40%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
   header .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 400; }
-
-  /* Tabs */
   .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; }
   .tab-btn { flex: 1; padding: 10px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; border: none; cursor: pointer; background: transparent; color: var(--text-muted); transition: all 0.2s; border-radius: 8px; }
   .tab-btn.active { background: var(--surface2); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .tab-btn:not(.active):hover { color: var(--text); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-
-  /* Settings */
   .settings { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
   .setting-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; flex: 1; min-width: 170px; }
   .setting-card label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
   .setting-card input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 500; outline: none; transition: all 0.2s; }
   .setting-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-
-  /* Paste */
   .paste-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
   .paste-header { display: flex; align-items: center; margin-bottom: 10px; }
   .paste-title { font-size: 13px; font-weight: 600; color: var(--text); }
@@ -90,8 +74,6 @@
   .paste-status { font-size: 12px; color: var(--text-muted); }
   .paste-status.success { color: var(--green); }
   .paste-status.error { color: var(--red); }
-
-  /* Table */
   .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
   table { width: 100%; border-collapse: collapse; }
   thead th { background: var(--surface2); padding: 11px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; text-align: left; border-bottom: 1px solid var(--border); }
@@ -116,8 +98,6 @@
   .add-row { display: flex; justify-content: center; padding: 12px; }
   .add-btn { background: var(--surface2); border: 1px dashed var(--border); color: var(--text-muted); padding: 8px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
   .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-
-  /* Results */
   .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; margin-bottom: 20px; }
   .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; }
   .result-card.final { border-color: rgba(108,140,255,0.3); background: linear-gradient(135deg, rgba(108,140,255,0.06), rgba(168,85,247,0.06)); grid-column: 1 / -1; }
@@ -128,8 +108,6 @@
   .color-green { color: var(--green); }
   .color-orange { color: var(--orange); }
   .color-red { color: var(--red); }
-
-  /* Admin */
   .admin-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
   .admin-panel.hidden { display: none; }
   .admin-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
@@ -146,8 +124,6 @@
   .kick-btn.unblock { color: var(--green); border-color: var(--green); }
   .kick-btn.unblock:hover { background: rgba(74,222,128,0.1); }
   .no-users { color: var(--text-muted); font-size: 13px; text-align: center; padding: 16px; }
-
-  /* Toggle */
   .toggle-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
   .toggle-label { font-size: 13px; color: var(--text-muted); }
   .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
@@ -156,10 +132,12 @@
   .toggle-slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 2px; bottom: 2px; background: var(--text-muted); border-radius: 50%; transition: 0.3s; }
   .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
   .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: white; }
-
   /* Semester */
-  .sem-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .sem-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; position: relative; }
   .sem-row-header { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .sem-delete { position: absolute; top: 10px; right: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; opacity: 0; }
+  .sem-row:hover .sem-delete { opacity: 1; }
+  .sem-delete:hover { color: var(--red); border-color: var(--red); background: rgba(248,113,113,0.1); }
   .sem-inputs { display: flex; gap: 12px; flex-wrap: wrap; }
   .sem-field { flex: 1; min-width: 100px; }
   .sem-field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
@@ -167,7 +145,6 @@
   .sem-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
   .sem-computed { background: transparent !important; border-color: transparent !important; font-weight: 600; }
   .sem-letter { font-size: 12px; text-align: center; margin-top: 2px; font-weight: 700; letter-spacing: 0.5px; }
-
   /* GPA Table */
   .gpa-table { width: 100%; border-collapse: collapse; }
   .gpa-table th { background: var(--surface2); padding: 10px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; text-align: left; border-bottom: 1px solid var(--border); }
@@ -183,14 +160,14 @@
   .gpa-tag-c { background: rgba(251,146,60,0.12); color: var(--orange); }
   .gpa-tag-d { background: rgba(245,158,11,0.12); color: #f59e0b; }
   .gpa-tag-f { background: rgba(248,113,113,0.12); color: var(--red); }
-
   @media (max-width: 600px) {
     body { padding: 16px 10px; }
     .settings { flex-direction: column; gap: 10px; }
     .setting-card { min-width: unset; }
     .container { padding-top: 56px; }
     header h1 { font-size: 24px; }
-    td input.name-input { min-width: 80px; font-size: 12px; }
+    td input.name-input { min-width: unset; width: 100%; font-size: 13px; }
+    td:first-child { min-width: 130px; }
     td input.num-input { width: 50px; font-size: 12px; }
     td input.grade-input { width: 55px; font-size: 12px; }
     thead th, tbody td { padding: 6px 6px; font-size: 11px; }
@@ -212,6 +189,7 @@
     .table-wrapper { overflow-x: auto; }
     .sem-inputs { flex-direction: column; gap: 8px; }
     .sem-field { min-width: unset; }
+    .sem-delete { opacity: 1; }
     .tab-btn { font-size: 11px; padding: 9px 6px; }
     .gpa-table th, .gpa-table td { padding: 6px 8px; font-size: 11px; }
     .gpa-table .course-name { max-width: 120px; }
@@ -254,8 +232,6 @@
     <button class="tab-btn" onclick="switchTab('semester')">Semester</button>
     <button class="tab-btn" onclick="switchTab('gpa')">GPA / QPA</button>
   </div>
-
-  <!-- Gradebook -->
   <div class="tab-content active" id="tab-gradebook">
     <div class="settings">
       <div class="setting-card"><label>Minor Weight (%)</label><input type="number" id="minorWeight" value="34" min="0" max="100" oninput="calculate()"></div>
@@ -277,15 +253,11 @@
     </div>
     <div class="results" id="results"></div>
   </div>
-
-  <!-- Semester -->
   <div class="tab-content" id="tab-semester">
     <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;text-align:center;">Final = (Term Avg × 80%) + (Exam × 20%)</p>
     <div id="semesterBlocks"></div>
     <div class="add-row"><button class="add-btn" onclick="addSemBlock()">+ Add Block</button></div>
   </div>
-
-  <!-- GPA / QPA -->
   <div class="tab-content" id="tab-gpa">
     <div class="paste-section">
       <div class="paste-header"><span class="paste-title">Paste History Courses (from Courses tab)</span></div>
@@ -304,7 +276,6 @@
     </div>
   </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -322,12 +293,11 @@ async function toggleBlock(uid,block){try{await db.collection('users').doc(uid).
 const tabNames=['gradebook','semester','gpa'];
 function switchTab(tab){document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===tabNames.indexOf(tab)));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');}
 
-// ── Gradebook ──
 let assignments=[{name:'',type:'minor',weight:1.0,grade:''}];
 function isGraded(a){const g=String(a.grade).trim().toUpperCase();if(g===''||g==='NM')return false;if(g==='NG')return true;return!isNaN(parseFloat(g));}
 function gv(a){if(String(a.grade).trim().toUpperCase()==='NG')return 0;return parseFloat(a.grade);}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function render(){const tbody=document.getElementById('assignmentBody');tbody.innerHTML='';assignments.forEach((a,i)=>{const isNM=String(a.grade).trim().toUpperCase()==='NM',isNG=String(a.grade).trim().toUpperCase()==='NG',tr=document.createElement('tr');tr.innerHTML=`<td><input class="name-input" type="text" placeholder="Assignment name" value="${esc(a.name)}" oninput="updateField(${i},'name',this.value)"></td><td><div class="type-toggle"><button class="${a.type==='minor'?'active-minor':''}" onclick="setType(${i},'minor')">Minor</button><button class="${a.type==='major'?'active-major':''}" onclick="setType(${i},'major')">Major</button></div></td><td><input class="num-input" type="number" step="0.1" min="0" value="${a.weight}" oninput="updateField(${i},'weight',parseFloat(this.value)||0)"></td><td><input class="grade-input ${isNM?'nm':''}${isNG?'ng':''}" type="text" placeholder="—" value="${esc(String(a.grade))}" oninput="updateField(${i},'grade',this.value)" onchange="updateField(${i},'grade',this.value)" onblur="updateField(${i},'grade',this.value)"></td><td><button class="delete-btn" onclick="removeRow(${i})">✕</button></td>`;tbody.appendChild(tr);});calculate();}
+function render(){const tbody=document.getElementById('assignmentBody');tbody.innerHTML='';assignments.forEach((a,i)=>{const isNM=String(a.grade).trim().toUpperCase()==='NM',isNG=String(a.grade).trim().toUpperCase()==='NG',tr=document.createElement('tr');tr.innerHTML=`<td><input class="name-input" type="text" placeholder="Assignment Name" value="${esc(a.name)}" oninput="updateField(${i},'name',this.value)"></td><td><div class="type-toggle"><button class="${a.type==='minor'?'active-minor':''}" onclick="setType(${i},'minor')">Minor</button><button class="${a.type==='major'?'active-major':''}" onclick="setType(${i},'major')">Major</button></div></td><td><input class="num-input" type="number" step="0.1" min="0" value="${a.weight}" oninput="updateField(${i},'weight',parseFloat(this.value)||0)"></td><td><input class="grade-input ${isNM?'nm':''}${isNG?'ng':''}" type="text" placeholder="—" value="${esc(String(a.grade))}" oninput="updateField(${i},'grade',this.value)" onchange="updateField(${i},'grade',this.value)" onblur="updateField(${i},'grade',this.value)"></td><td><button class="delete-btn" onclick="removeRow(${i})">✕</button></td>`;tbody.appendChild(tr);});calculate();}
 function updateField(i,f,v){assignments[i][f]=v;calculate();if(f==='grade'){const inp=document.querySelectorAll('.grade-input')[i];if(inp){const u=String(v).trim().toUpperCase();inp.classList.toggle('nm',u==='NM');inp.classList.toggle('ng',u==='NG');}}}
 function setType(i,t){assignments[i].type=t;render();}
 function addRow(){assignments.push({name:'',type:'minor',weight:1.0,grade:''});render();}
@@ -337,17 +307,15 @@ function calculate(){const minorPct=parseFloat(document.getElementById('minorWei
 function parsePastedText(){const raw=document.getElementById('pasteArea').value.trim(),st=document.getElementById('pasteStatus');if(!raw){st.textContent='Paste your gradebook table first';st.className='paste-status error';return;}const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length>0),res=[];for(const line of lines){if(/^\s*date\s/i.test(line)&&/assignment/i.test(line))continue;const hasMinor=/minor/i.test(line),hasMajor=/major/i.test(line);if(!hasMinor&&!hasMajor)continue;const type=hasMajor?'major':'minor';let grade='NM';if(/\bNM\b/i.test(line))grade='NM';else if(/\bNG\b/i.test(line))grade='NG';else{const m=[...line.matchAll(/(\d+\.?\d*)\s*\/\s*(\d+)/g)].filter(m=>parseFloat(m[2])===100).pop();if(m)grade=String(parseFloat(m[1]));}let weight=1.0,lw=line.replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g,'').replace(/\bNM\b/gi,'').replace(/\bNG\b/gi,'');const wm=lw.match(/\b(\d+\.\d+)\b/g);if(wm)for(const w of wm){const v=parseFloat(w);if(v>=0.1&&v<=5.0){weight=v;break;}}const tp=line.split(/\t/);if(tp.length>=4)for(let ti=2;ti<tp.length;ti++){const c=tp[ti].trim(),v=parseFloat(c);if(!isNaN(v)&&v>=0.1&&v<=5.0&&c.match(/^\d+\.?\d*$/)){weight=v;break;}}let name=line;name=name.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g,'').replace(/(Minor|Major)\s*(Assignment)?\s*\d*/gi,'').replace(/(\d+\.?\d*)\s*\/\s*(100)\b/g,'').replace(/\bNM\b/gi,'').replace(/\bNG\b/gi,'').replace(new RegExp('\\b'+weight.toFixed(1).replace('.','\\.')+'\\b'),'').replace(/\b(Date|Type|Weight|Grade)\b/gi,'').replace(/\t/g,' ').replace(/\s+/g,' ').trim();if(name.length<1)continue;res.push({name,type,weight,grade});}if(!res.length){st.textContent='No assignments found.';st.className='paste-status error';return;}assignments=res;render();const nm=res.filter(a=>a.grade==='NM').length,ng=res.filter(a=>a.grade==='NG').length;let x='';if(nm>0)x+=` (${nm} NM)`;if(ng>0)x+=` (${ng} NG)`;st.textContent=`✓ Imported ${res.length} assignments`+x;st.className='paste-status success';}
 document.getElementById('pasteArea').addEventListener('paste',()=>{setTimeout(parsePastedText,100);});
 
-// ── Semester ──
 let semBlocks=[{name:'1st Block',q1:'',q2:'',exam:''},{name:'2nd Block',q1:'',q2:'',exam:''},{name:'3rd Block',q1:'',q2:'',exam:''},{name:'4th Block',q1:'',q2:'',exam:''},{name:'5th Block',q1:'',q2:'',exam:''},{name:'6th Block',q1:'',q2:'',exam:''},{name:'7th Block',q1:'',q2:'',exam:''},{name:'8th Block',q1:'',q2:'',exam:''}];
 function letterGrade(v){if(v>=90)return{letter:'A',color:'#4ade80',cls:'a'};if(v>=80)return{letter:'B',color:'#6c8cff',cls:'b'};if(v>=70)return{letter:'C',color:'#fb923c',cls:'c'};if(v>=60)return{letter:'D',color:'#f59e0b',cls:'d'};return{letter:'F',color:'#f87171',cls:'f'};}
 function gradeToQP(v){if(v>=90)return 4.0;if(v>=80)return 3.0;if(v>=70)return 2.0;if(v>=60)return 1.0;return 0.0;}
-function buildSemester(){const el=document.getElementById('semesterBlocks');el.innerHTML='';semBlocks.forEach((b,i)=>{const div=document.createElement('div');div.className='sem-row';div.innerHTML=`<div class="sem-row-header"><input class="name-input" type="text" value="${esc(b.name)}" data-field="name" data-i="${i}" style="background:transparent;border:none;color:var(--text);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0;width:140px;outline:none;"><button class="delete-btn" onclick="removeSemBlock(${i})">✕</button></div><div class="sem-inputs"><div class="sem-field"><label>1st 9 Weeks</label><input type="number" value="${b.q1}" placeholder="—" data-field="q1" data-i="${i}"></div><div class="sem-field"><label>2nd 9 Weeks</label><input type="number" value="${b.q2}" placeholder="—" data-field="q2" data-i="${i}"></div><div class="sem-field"><label>Term Avg</label><input type="text" class="sem-computed" id="sem-term-${i}" value="—" readonly></div><div class="sem-field"><label>Exam Grade</label><input type="number" value="${b.exam}" placeholder="—" data-field="exam" data-i="${i}"></div><div class="sem-field"><label>Final Avg</label><input type="text" class="sem-computed" id="sem-final-${i}" value="—" readonly><div class="sem-letter" id="sem-letter-${i}"></div></div></div>`;el.appendChild(div);});el.querySelectorAll('input[data-field]').forEach(inp=>{inp.addEventListener('input',function(){semBlocks[parseInt(this.dataset.i)][this.dataset.field]=this.value;updateSemComputed(parseInt(this.dataset.i));});});semBlocks.forEach((_,i)=>updateSemComputed(i));}
+function buildSemester(){const el=document.getElementById('semesterBlocks');el.innerHTML='';semBlocks.forEach((b,i)=>{const div=document.createElement('div');div.className='sem-row';div.innerHTML=`<button class="sem-delete" onclick="removeSemBlock(${i})" title="Remove block">✕</button><div class="sem-row-header"><input class="name-input" type="text" value="${esc(b.name)}" data-field="name" data-i="${i}" style="background:transparent;border:none;color:var(--text);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0;width:140px;outline:none;"></div><div class="sem-inputs"><div class="sem-field"><label>1st 9 Weeks</label><input type="number" value="${b.q1}" placeholder="—" data-field="q1" data-i="${i}"></div><div class="sem-field"><label>2nd 9 Weeks</label><input type="number" value="${b.q2}" placeholder="—" data-field="q2" data-i="${i}"></div><div class="sem-field"><label>Term Avg</label><input type="text" class="sem-computed" id="sem-term-${i}" value="—" readonly></div><div class="sem-field"><label>Exam Grade</label><input type="number" value="${b.exam}" placeholder="—" data-field="exam" data-i="${i}"></div><div class="sem-field"><label>Final Avg</label><input type="text" class="sem-computed" id="sem-final-${i}" value="—" readonly><div class="sem-letter" id="sem-letter-${i}"></div></div></div>`;el.appendChild(div);});el.querySelectorAll('input[data-field]').forEach(inp=>{inp.addEventListener('input',function(){semBlocks[parseInt(this.dataset.i)][this.dataset.field]=this.value;updateSemComputed(parseInt(this.dataset.i));});});semBlocks.forEach((_,i)=>updateSemComputed(i));}
 function updateSemComputed(i){const b=semBlocks[i],q1=parseFloat(b.q1),q2=parseFloat(b.q2),ex=parseFloat(b.exam),hasQ=!isNaN(q1)&&!isNaN(q2),termAvg=hasQ?(q1+q2)/2:null,final=hasQ&&!isNaN(ex)?(termAvg*0.8+ex*0.2):null,termEl=document.getElementById('sem-term-'+i),finalEl=document.getElementById('sem-final-'+i),letterEl=document.getElementById('sem-letter-'+i);if(termEl){termEl.value=termAvg!==null?termAvg.toFixed(2):'—';termEl.style.color=termAvg!==null?letterGrade(termAvg).color:'var(--text-muted)';}if(finalEl){finalEl.value=final!==null?final.toFixed(2):'—';if(final!==null){const lg=letterGrade(final);finalEl.style.color=lg.color;letterEl.textContent=lg.letter;letterEl.style.color=lg.color;}else{finalEl.style.color='var(--text-muted)';letterEl.textContent='';}}}
 function addSemBlock(){semBlocks.push({name:'Block '+(semBlocks.length+1),q1:'',q2:'',exam:''});buildSemester();}
 function removeSemBlock(i){if(semBlocks.length<=1)return;semBlocks.splice(i,1);buildSemester();}
 
-// ── GPA / QPA ──
-let historyCourses=[], currentCourses=[];
+let historyCourses=[],currentCourses=[];
 function parseHistoryCourses(){
   const raw=document.getElementById('gpaHistoryArea').value.trim(),st=document.getElementById('gpaHistoryStatus');
   if(!raw){st.textContent='Paste history courses first';st.className='paste-status error';return;}
@@ -355,8 +323,6 @@ function parseHistoryCourses(){
   for(const line of lines){
     if(/^Course\s*Name/i.test(line))continue;if(/^History\s*Courses/i.test(line))continue;
     const parts=line.split('\t').map(p=>p.trim());
-    const nums=parts.filter(p=>/^\d+\.?\d*$/.test(p)).map(p=>parseFloat(p));
-    if(nums.length<3)continue;
     let gradeCols=[];for(let j=0;j<parts.length;j++){if(/^\d+\.?\d{2,}$/.test(parts[j]))gradeCols.push(j);}
     if(gradeCols.length<4)continue;
     const courseName=parts[0];if(!courseName||courseName.length<2)continue;
